@@ -10,11 +10,15 @@ func TestCreateECDSAKeyPair(t *testing.T) {
 	fmt.Println("privKey=", privKey)
 	fmt.Println("pubKey=", pubKey)
 	fmt.Println("cpubKey=", cpubKey)
+	// priKeyStr	私钥（hex 编码）
+	// pubKeyStr	公钥（未压缩，hex 编码）
+	// compressPubkeyStr	公钥（压缩格式，hex 编码）
+	// error	错误对象（生成失败时返回）
 }
 
-// privKey = fb26155c1ff94bb97692793d1197d9c6c8091f25f8c8ac703f92695d32c5194b
-// pubKey = 048846b3ce4376e8d58c83c1c6420a784caa675d7f26c496f499585d09891af8fc9167a4b658b57b28211783cdee651caa8b5341b753fa39c995317670123f12d8
-// cpubKey = 028846b3ce4376e8d58c83c1c6420a784caa675d7f26c496f499585d09891af8fc
+//privKey= 90cd7a8010639586cb7d16195d75d1341ae85611687793134d3da663df627f21
+//pubKey= 046b2665ff291b363e1d0fe744f76fd2f51713d69cf205676e2ce8abef16422a343d5f2d898a2d7da2406181d3955812ba5d798b2e922ee513b3d8796d48fbcc5b
+//cpubKey= 036b2665ff291b363e1d0fe744f76fd2f51713d69cf205676e2ce8abef16422a34
 
 func TestSignMessage(t *testing.T) {
 	// 0x35096AD62E57e86032a3Bb35aDaCF2240d55421D

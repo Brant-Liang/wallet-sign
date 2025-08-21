@@ -11,12 +11,12 @@ import (
 
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/dapplink-labs/wallet-sign-go/hsm"
-	"github.com/dapplink-labs/wallet-sign-go/leveldb"
-	"github.com/dapplink-labs/wallet-sign-go/protobuf/wallet"
+	"github.com/Brant-Liang/wallet-sign/gen/go"
+	"github.com/Brant-Liang/wallet-sign/hsm"
+	"github.com/Brant-Liang/wallet-sign/leveldb"
 )
 
-const MaxReceivedMessageSize = 1024 * 1024 * 30000
+const MaxReceivedMessageSize = 1024 * 1024 * 4
 
 type RpcServerConfig struct {
 	GrpcHostname string
@@ -30,7 +30,6 @@ type RpcServer struct {
 	*RpcServerConfig
 	db        *leveldb.Keys
 	HsmClient *hsm.HsmClient
-
 	wallet.UnimplementedWalletServiceServer
 	stopped atomic.Bool
 }
@@ -45,15 +44,21 @@ func (s *RpcServer) Stopped() bool {
 }
 
 func NewRpcServer(db *leveldb.Keys, config *RpcServerConfig) (*RpcServer, error) {
-	hsmClient, err := hsm.NewHSMClient(context.Background(), config.KeyPath, config.KeyName)
-	if err != nil {
-		log.Error("new hsm client fail", "err", err)
-	}
-	return &RpcServer{
+	var hsmClient *hsm.HsmClient
+	var hsmErr error
+	rpcServer := &RpcServer{
 		RpcServerConfig: config,
 		db:              db,
-		HsmClient:       hsmClient,
-	}, nil
+	}
+	if config.HsmEnable {
+		hsmClient, hsmErr = hsm.NewHSMClient(context.Background(), config.KeyPath, config.KeyName)
+		if hsmErr != nil {
+			log.Error("new hsm client fail", "err", hsmErr)
+			return nil, hsmErr
+		}
+		rpcServer.HsmClient = hsmClient
+	}
+	return rpcServer, nil
 }
 
 func (s *RpcServer) Start(ctx context.Context) error {

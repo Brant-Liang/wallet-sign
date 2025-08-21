@@ -10,7 +10,8 @@ import (
 )
 
 func TestCreateEdDSAKeyPair(t *testing.T) {
-	privKey, pubKey, _ := CreateEdDSAKeyPair()
+	eKp, privKey, pubKey, _ := CreateEdDSAKeyPair()
+	fmt.Println(eKp)
 	fmt.Println("privKey=", privKey)
 	fmt.Println("pubKey=", pubKey)
 }

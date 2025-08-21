@@ -15,6 +15,7 @@ func CreateECDSAKeyPair() (string, string, string, error) {
 		log.Error("generate key fail", "err", err)
 		return EmptyHexString, EmptyHexString, EmptyHexString, err
 	}
+	// hex EncodeToString 转为十六进制字符串
 	priKeyStr := hex.EncodeToString(crypto.FromECDSA(privateKey))
 	pubKeyStr := hex.EncodeToString(crypto.FromECDSAPub(&privateKey.PublicKey))
 	compressPubkeyStr := hex.EncodeToString(crypto.CompressPubkey(&privateKey.PublicKey))
@@ -22,15 +23,18 @@ func CreateECDSAKeyPair() (string, string, string, error) {
 	return priKeyStr, pubKeyStr, compressPubkeyStr, nil
 }
 
+// 基于 ECDSA + secp256k1 的签名函数，目的是对消息 txMsg 进行签名，使用私钥 privKey
 func SignECDSAMessage(privKey string, txMsg string) (string, error) {
 	hash := common.HexToHash(txMsg)
 	fmt.Println(hash.Hex())
-	privByte, err := hex.DecodeString(privKey)
+	privByte, err := hex.DecodeString(privKey) //私钥的 hex 编码解码成 byte 数组，通常是 32 字节。
 	if err != nil {
 		log.Error("decode private key fail", "err", err)
 		return EmptyHexString, err
 	}
 	privKeyEcdsa, err := crypto.ToECDSA(privByte)
+	// 将 byte 形式私钥恢复成 *ecdsa.PrivateKey
+	// crypto.ToECDSA() 会自动验证私钥是否合法（在 secp256k1 上）
 	if err != nil {
 		log.Error("Byte private key to ecdsa key fail", "err", err)
 		return EmptyHexString, err

@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/urfave/cli/v2"
 
-	"github.com/dapplink-labs/wallet-sign-go/flags"
+	"github.com/Brant-Liang/wallet-sign/flags"
 )
 
 type ServerConfig struct {

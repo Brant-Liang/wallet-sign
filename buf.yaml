@@ -1,8 +1,7 @@
 # 构建与依赖
-version: v1
-# 可选：发布到 BSR 时才需要
-# name: buf.build/your-org/your-repo
-
-# 如需使用 googleapis 等第三方 proto，这里加依赖
-# deps:
-#   - buf.build/googleapis/googleapis
+version: v2
+modules:
+  - path: protobuf         # 这里就是你的 .proto 根目录
+lint:
+  use:
+    - STANDARD

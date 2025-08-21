@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+option go_package = "github.com/Brant-Liang/wallet-sign/protobuf/wallet";
+package wallet.v1; // package 是 proto 层面的命名空间，跨语言都用。
+
+enum ReturnCode {
+  ERROR = 0;
+  SUCCESS = 1;
+}
+message PublicKey {
+  string compress_pubkey = 1;
+  string pubkey = 2;
+}
+
+message GetSupportSignWayRequest{
+  string consumer_token = 1;
+}
+
+message SignWay {
+  string schema = 1;
+}
+
+message GetSupportSignWayResponse {
+  ReturnCode code = 1;
+  string msg = 2;
+  repeated SignWay sign_way = 3;
+}
+
+message ExportPublicKeyRequest {
+  string consumer_token = 1;
+  // CryptoType
+  string type = 2;
+  uint64 number = 3;
+}
+
+message ExportPublicKeyResponse {
+  ReturnCode code = 1;
+  string msg = 2;
+  repeated PublicKey public_key = 3;
+}
+
+message SignTxMessageRequest {
+  string consumer_token = 1;
+  // CryptoType
+  string type = 2;
+  string public_key = 3;
+  string message_hash = 4;
+}
+
+message SignTxMessageResponse {
+  ReturnCode code = 1;
+  string msg = 2;
+  string hash = 3;
+  string signature = 4;
+}
+
+message MessageHash {
+  string public_key = 1;
+  string tx_message_hash = 2;
+  string sign_type = 3;
+}
+message MessageSignature {
+  string tx_message_hash = 1;
+  string signature = 2;
+}
+
+message SignBatchMessageSignatureRequest {
+  string consumer_token = 1;
+  repeated MessageHash msg_hash_list = 2;
+}
+
+message SignBatchMessageSignatureResponse {
+  ReturnCode code = 1;
+  string msg = 2;
+  repeated MessageSignature success_msg_sig_list = 3;
+  repeated MessageSignature fail_msg_sig_list = 4;
+}
+service WalletService {
+  rpc GetSupportSignType(GetSupportSignWayRequest) returns (GetSupportSignWayResponse) {}  // wallet.WalletService/getSupportSignType
+  rpc CreateKeyPairsExportPublicKeyList(ExportPublicKeyRequest) returns (ExportPublicKeyResponse) {}
+  rpc SignMessageSignature(SignTxMessageRequest) returns (SignTxMessageResponse) {}
+  rpc GetSignBatchMessageSignature(SignBatchMessageSignatureRequest) returns (SignBatchMessageSignatureResponse) {}
+}
