@@ -5,46 +5,69 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum/log"
 )
 
-type EdDSAKeyPair struct {
-	PrivateKey ed25519.PrivateKey
-	PublicKey  ed25519.PublicKey
+type EdDSASinger struct{}
+
+func NewEdDSASigner() *EdDSASinger {
+	return &EdDSASinger{}
 }
 
-func CreateEdDSAKeyPair() (string, string, error) {
+func (e *EdDSASinger) CreateKeyPair() (string, string, string, error) {
 	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		log.Error("create key pair fail:", "err", err)
-		return EmptyHexString, EmptyHexString, nil
+		return EmptyHexString, EmptyHexString, "", nil
 	}
-	return hex.EncodeToString(privateKey), hex.EncodeToString(publicKey), nil
+	return hex.EncodeToString(privateKey), hex.EncodeToString(publicKey), hex.EncodeToString(publicKey), nil
 }
 
-func ParseEdDSAPublicKey(hexKey string) (ed25519.PublicKey, error) {
-	keyBytes, err := hex.DecodeString(hexKey)
+func (e *EdDSASinger) SignMessage(privateKey string, txMsg string) (string, error) {
+	privateKeyBytes, err := hex.DecodeString(privateKey)
 	if err != nil {
-		return nil, fmt.Errorf("invalid public key hex: %w", err)
+		log.Error("decode ed25519 private key fail", "err", err)
+		return EmptyHexString, err
 	}
-	if len(keyBytes) != ed25519.PublicKeySize {
-		return nil, errors.New("invalid public key size")
+	if len(privateKeyBytes) != ed25519.PrivateKeySize {
+		return EmptyHexString, errors.New("invalid ed25519 private key length")
 	}
-	return ed25519.PublicKey(keyBytes), nil
+
+	txMsgBytes, err := hex.DecodeString(txMsg)
+	if err != nil {
+		log.Error("decode tx message fail", "err", err)
+		return EmptyHexString, err
+	}
+
+	signature := ed25519.Sign(privateKeyBytes, txMsgBytes)
+	return hex.EncodeToString(signature), nil
 }
 
-func SignEdDSAMessage(priKey string, txMsg string) (string, error) {
-	privateKey, _ := hex.DecodeString(priKey)
-	txMsgByte, _ := hex.DecodeString(txMsg)
-	signMsg := ed25519.Sign(privateKey, txMsgByte)
+func (e *EdDSASinger) VerifyMessage(publicKey string, txMsg string, signature string) (bool, error) {
+	publicKeyBytes, err := hex.DecodeString(publicKey)
+	if err != nil {
+		log.Error("decode ed25519 public key fail", "err", err)
+		return false, err
+	}
+	if len(publicKeyBytes) != ed25519.PublicKeySize {
+		return false, errors.New("invalid ed25519 public key length")
+	}
 
-	return hex.EncodeToString(signMsg), nil
-}
+	txHashBytes, err := hex.DecodeString(txMsg)
+	if err != nil {
+		log.Error("decode tx hash fail", "err", err)
+		return false, err
+	}
 
-func VerifyEdDSASign(pubKey, msgHash, sig string) bool {
-	publicKeyByte, _ := hex.DecodeString(pubKey)
-	msgHashByte, _ := hex.DecodeString(msgHash)
-	signature, _ := hex.DecodeString(sig)
-	return ed25519.Verify(publicKeyByte, msgHashByte, signature)
+	sigBytes, err := hex.DecodeString(signature)
+	if err != nil {
+		log.Error("decode signature fail", "err", err)
+		return false, err
+	}
+	if len(sigBytes) != ed25519.SignatureSize {
+		return false, errors.New("invalid ed25519 signature length")
+	}
+
+	ok := ed25519.Verify(publicKeyBytes, txHashBytes, sigBytes)
+	return ok, nil
 }

@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"google.golang.org/api/option"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 
 	kms "cloud.google.com/go/kms/apiv1"
-	"google.golang.org/api/option"
-	kmspb "google.golang.org/genproto/googleapis/cloud/kms/v1"
+	"cloud.google.com/go/kms/apiv1/kmspb"
 )
 
 type HsmClient struct {
@@ -21,7 +21,7 @@ type HsmClient struct {
 
 func NewHSMClient(ctx context.Context, keyPath string, keyName string) (*HsmClient, error) {
 	apikey := option.WithCredentialsFile(keyPath)
-
+	
 	client, err := kms.NewKeyManagementClient(ctx, apikey)
 	if err != nil {
 		log.Error("new key manager client fail", "err", err)

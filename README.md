@@ -1,6 +1,24 @@
 # wallet-sign
 Signing Machine
 
+```aiignore
+{
+  "code": "SUCCESS",
+  "message": "create key pairs success",
+  "public_key_addresses": [
+    {
+      "public_key": "041d08a0116ecf089637a718e25c1834862116a4d9680af5d58b6cc96cfdef45dd678e083813821d142affe8b507535201b3801d9595fc8835caa341a64512d4cb",
+      "compress_public_key": "031d08a0116ecf089637a718e25c1834862116a4d9680af5d58b6cc96cfdef45dd",
+      "address": "0x2f2a5B199438e31d46dEf97d90A51ac80c233bfF"
+    },
+    {
+      "public_key": "04af8a843f9d31aac3a4f9f78e328db5f088b6a6506778466cea82f7b986a5691227e8a35440fc414be49c4a450b5175c9ec02d1aaee1055f704adc3f359265259",
+      "compress_public_key": "03af8a843f9d31aac3a4f9f78e328db5f088b6a6506778466cea82f7b986a56912",
+      "address": "0xbaFD1775F5320bF428fa2841D6DC175B68cD529c"
+    }
+  ]
+}
+```
 test 
 ```json
 {

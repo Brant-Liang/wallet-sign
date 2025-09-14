@@ -1,0 +1,10 @@
+level_db_path: "./data/keys"
+rpc_server:
+  host: 0.0.0.0
+  port: 8189
+credentials_file: "./"
+key_name: "hsm"
+key_path: "./keypath"
+hsm_enable: false
+
+chains: [Bitcoin, Ethereum, Solana]

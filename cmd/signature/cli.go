@@ -9,26 +9,28 @@ import (
 	"github.com/Brant-Liang/wallet-sign/common/cliapp"
 	"github.com/Brant-Liang/wallet-sign/config"
 	flags2 "github.com/Brant-Liang/wallet-sign/flags"
-	"github.com/Brant-Liang/wallet-sign/leveldb"
 	"github.com/Brant-Liang/wallet-sign/services/rpc"
 	"github.com/ethereum/go-ethereum/log"
 )
 
 func runRpc(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Lifecycle, error) {
 	fmt.Println("running grpc services...")
-	cfg := config.NewConfig(ctx)
-	grpcServerCfg := &rpc.RpcServerConfig{
-		GrpcHostname: cfg.RpcServer.Host,
-		GrpcPort:     cfg.RpcServer.Port,
-		KeyName:      cfg.KeyName,
-		KeyPath:      cfg.CredentialsFile,
-		HsmEnable:    cfg.HsmEnable,
+	cfgFile := ctx.String("config")
+	if cfgFile == "" {
+		cfgFile = "config.yml"
 	}
-	db, err := leveldb.NewKeyStore(cfg.LevelDbPath)
+	cfg, err := config.NewConfig(cfgFile)
 	if err != nil {
-		log.Error("new key store level db", "err", err)
+		log.Error("config.NewConfig error", "error", err)
+		return nil, err
 	}
-	return rpc.NewRpcServer(db, grpcServerCfg)
+
+	srv, err := rpc.NewRpcServer(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return srv, nil
 }
 
 func NewCli(GitCommit string, GitData string) *cli.App {

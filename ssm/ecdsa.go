@@ -2,14 +2,18 @@ package ssm
 
 import (
 	"encoding/hex"
-	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
 )
 
-func CreateECDSAKeyPair() (string, string, string, error) {
+type EcdsaSigner struct{}
+
+func NewEcdsaSigner() *EcdsaSigner {
+	return &EcdsaSigner{}
+}
+
+func (s *EcdsaSigner) CreateKeyPair() (string, string, string, error) {
 	privateKey, err := crypto.GenerateKey()
 	if err != nil {
 		log.Error("generate key fail", "err", err)
@@ -19,15 +23,12 @@ func CreateECDSAKeyPair() (string, string, string, error) {
 	priKeyStr := hex.EncodeToString(crypto.FromECDSA(privateKey))
 	pubKeyStr := hex.EncodeToString(crypto.FromECDSAPub(&privateKey.PublicKey))
 	compressPubkeyStr := hex.EncodeToString(crypto.CompressPubkey(&privateKey.PublicKey))
-
-	return priKeyStr, pubKeyStr, compressPubkeyStr, nil
+	return priKeyStr, pubKeyStr, compressPubkeyStr, err
 }
 
-// 基于 ECDSA + secp256k1 的签名函数，目的是对消息 txMsg 进行签名，使用私钥 privKey
-func SignECDSAMessage(privKey string, txMsg string) (string, error) {
+func (s *EcdsaSigner) SignMessage(privateKey string, txMsg string) (string, error) {
 	hash := common.HexToHash(txMsg)
-	fmt.Println(hash.Hex())
-	privByte, err := hex.DecodeString(privKey) //私钥的 hex 编码解码成 byte 数组，通常是 32 字节。
+	privByte, err := hex.DecodeString(privateKey) //私钥的 hex 编码解码成 byte 数组，通常是 32 字节。
 	if err != nil {
 		log.Error("decode private key fail", "err", err)
 		return EmptyHexString, err
@@ -47,7 +48,7 @@ func SignECDSAMessage(privKey string, txMsg string) (string, error) {
 	return hex.EncodeToString(signatureByte), nil
 }
 
-func VerifyEcdsaSignature(publicKey, txHash, signature string) (bool, error) {
+func (s *EcdsaSigner) VerifyMessage(publicKey string, txMsg string, signature string) (bool, error) {
 	// Convert public key from hexadecimal to bytes
 	pubKeyBytes, err := hex.DecodeString(publicKey)
 	if err != nil {
@@ -56,7 +57,7 @@ func VerifyEcdsaSignature(publicKey, txHash, signature string) (bool, error) {
 	}
 
 	// Convert transaction string from hexadecimal to bytes
-	txHashBytes, err := hex.DecodeString(txHash)
+	txMsgBytes, err := hex.DecodeString(txMsg)
 	if err != nil {
 		log.Error("Error converting transaction hash to bytes", err)
 		return false, err
@@ -70,5 +71,5 @@ func VerifyEcdsaSignature(publicKey, txHash, signature string) (bool, error) {
 	}
 
 	// Verify the transaction signature using the public key
-	return crypto.VerifySignature(pubKeyBytes, txHashBytes, sigBytes[:64]), nil
+	return crypto.VerifySignature(pubKeyBytes, txMsgBytes, sigBytes[:64]), nil
 }
